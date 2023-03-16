@@ -1,0 +1,318 @@
+#include<stdio.h>
+
+#include<stdlib.h>
+
+#include<string.h>
+
+char operand[20];
+
+void main() {
+
+  FILE *f1,*f2,*f3,*f4,*f5,*f6,*f7;
+
+  unsigned int i,len,address,lc,add1,code1,obj,code,add,count=0;
+
+  char a[20],ad[20],label[20],opcode[20],proglen[10],mne[10],symbol[10],object[20];
+
+  f1=fopen("list.txt","w+");
+
+  f3=fopen("intermediate.txt","r");
+
+  f5=fopen("rec.txt","w+");
+
+  f6=fopen("proglen.txt","r");
+
+  fscanf(f6,"%s",proglen);
+
+  fscanf(f3,"%s%s%x",label,opcode,&lc);
+
+  fprintf(f5,"H^%s^00%x^%s\n",label,lc,proglen);
+
+  fprintf(f5,"T^00%x",lc);
+
+  if(strcmp(opcode,"START")==0) 
+
+  {
+
+    fprintf(f1,"%s %s\t%x\n",label,opcode,lc);
+
+    fscanf(f3,"%x%s%s%s",&address,label,opcode,operand); 
+
+  }
+
+  while(strcmp(opcode,"END")!=0) 
+
+  {
+
+    if(strcmp(opcode,"BYTE")==0) 
+
+    {
+
+      fprintf(f1,"%x\t%s\t%s\t%s\t ",address,label,opcode,operand);
+
+      len=strlen(operand);
+
+      count+=(len-3)/2;
+
+      for(i=2;i<len-1;i++)
+
+      {
+
+           fprintf(f1,"%c",operand[i]);
+
+      }
+
+        fprintf(f1,"\n");
+
+     }
+
+    else if(strcmp(opcode,"WORD")==0) 
+
+    {
+
+      fprintf(f1,"%x\t%s\t%s\t%s\t 00000%s\n",address,label,opcode,operand,operand);
+
+      count+=3;
+
+     }
+
+    else if(strcmp(opcode,"RESB")==0||strcmp(opcode,"RESW")==0)
+
+          fprintf(f1,"%x\t%s\t%s\t%s\n",address,label,opcode,operand);
+
+    else 
+
+    {
+
+      f4=fopen("optab.txt","r");
+
+      fscanf(f4,"%s%x",mne,&code);
+
+     while(strcmp(opcode,mne)!=0 && !feof(f4))
+
+              fscanf(f4,"%s%x",mne,&code);
+
+        fclose(f4);
+
+      if(strcmp(operand," ")==0) {
+
+        fprintf(f1,"%x\t%s\t%s\t%s\t %x0000\n",address,label,opcode,operand,code);
+
+        count+=3;
+
+        }
+
+      else
+
+      {
+
+        f2=fopen("Symtab.txt","r");
+
+        fscanf(f2,"%x%s",&add,symbol);
+
+      while(strcmp(operand,symbol)!=0 && !feof(f2))
+
+             fscanf(f2,"%x%s",&add,symbol);
+
+        fclose(f2);
+
+        if(operand[0]=='B') {
+
+               add=add+32768;
+
+               fprintf(f1,"%x\t%s\t%s\t%s,X %02x%x\n",address,label,opcode,operand,code,add);
+
+               count+=3; 
+
+               }
+
+        else
+
+        {
+
+           fprintf(f1,"%x\t%s\t%s\t%s\t %02x%x\n",address,label,opcode,operand,code,add);
+
+           count+=3;
+
+        }
+
+       } 
+
+      }
+
+      fscanf(f3,"%x%s%s%s",&address,label,opcode,operand);
+
+    for(i=0;i<strlen(operand);i++){
+
+      if(operand[i]==',')
+
+      {
+
+          operand[i]='\0';
+
+        break; }
+
+    } 
+
+    }
+
+  fprintf(f1,"%x\t%s\t%s\t%s\n",address,label,opcode,operand);
+
+  fprintf(f5,"^%x",count);
+
+  fseek(f1,SEEK_SET,0);
+
+  fscanf(f1,"%s%s%s",label,opcode,operand);
+
+ fscanf(f1,"%x%s%s%s%s",&address,label,opcode,operand,object);
+
+  while((strcmp(opcode,"END")!=0)&&(strcmp(opcode,"RESB")!=0)&&(strcmp(opcode,"RESW")!=0))
+
+  {
+
+     fprintf(f5,"^%s",object);
+
+    fscanf(f1,"%x%s%s%s%s",&address,label,opcode,operand,object);
+
+  }
+
+  fclose(f1);
+
+  fclose(f3);
+
+  fprintf(f5,"\nE^00%x",lc);
+
+  fclose(f5);
+
+}
+
+/*
+
+Inputs:
+optab.txt:
+LDA 00
+
+LDX 04
+
+ADD 18
+
+COMP 28
+
+DIV 24
+
+JEQ 30
+
+JGT 34
+
+JLT 38
+
+LDCH 50
+
+MUL 20
+
+RD 08
+
+STA 0C
+
+STCH 54
+
+STX 10
+
+SUB 1C
+
+TD E0
+
+TIX 2C
+
+WD DC
+
+Symtab.txt:
+3000	WRREC
+
+3003	WLOOP
+
+3006	**
+
+3009	**
+
+300c	**
+
+300f	**
+
+3012	**
+
+3015	OUTPUT
+
+3016	ZERO
+
+3019	BUFFER
+
+4019	LENGTH
+
+401c	**
+
+intermediate.txt:
+	BUFTOREC	START	3000
+
+3000	WRREC	LDX	ZERO
+
+3003	WLOOP	TD	OUTPUT
+
+3006	**		JEQ	WLOOP
+
+3009	**		LDCH	BUFFER,X
+
+300c	**		WD	OUTPUT
+
+300f	**		TIX	LENGTH
+
+3012	**		JLT	WLOOP
+
+3015	OUTPUT	BYTE	X'05'
+
+3016	ZERO	WORD	0
+
+3019	BUFFER	RESB	4096
+
+4019	LENGTH	RESW	1
+
+401c	**		END	WRREC
+
+progLen.txt:
+101c
+
+Outputs:
+list.txt:
+BUFTOREC START	3000
+
+3000	WRREC	  LDX	    ZERO	    043016
+
+3003	WLOOP	  TD	  OUTPUT	    e03015
+
+3006	**	    JEQ	  WLOOP	      303003
+
+3009	**	    LDCH	BUFFER,X    50b019
+
+300c	**	    WD	  OUTPUT	    dc3015
+
+300f	**	    TIX	  LENGTH	    2c4019
+
+3012	**	    JLT	  WLOOP	      383003
+
+3015	OUTPUT	BYTE	X'05'	      05
+
+3016	ZERO	  WORD	0	          000000
+
+3019	BUFFER	RESB	4096
+
+4019	LENGTH	RESW	1
+
+401c	**	END	WRREC
+
+rec.txt:
+
+H^BUFTOREC^003000^101c
+
+T^003000^19^043016^e03015^303003^50b019^dc3015^2c4019^383003^05^000000
+
+E^003000
