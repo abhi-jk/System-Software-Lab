@@ -1,0 +1,373 @@
+#include<stdio.h>
+
+#include<stdlib.h>
+
+int spaces[50];
+
+struct file
+
+{
+
+ char name[20];
+
+ int index;
+
+ int len;
+
+ int block[20];
+
+} f[20];
+
+struct FILE {
+
+ char name;
+
+ int start;
+
+ int len;
+
+ int status;
+
+} files[20];
+
+int searchi(int a)
+
+{
+
+ int flag=1;
+
+ if(spaces[a]==1)
+
+    flag=0;
+
+ return flag;
+
+}
+
+int search(int start, int len) {
+
+ int i,flag=1;
+
+ for(i=start;i<start+len;i++) {
+
+ if(spaces[i] ==1 )
+
+ {
+
+   flag=0;
+
+   break;
+
+ }
+
+ }
+
+ return flag;
+
+}
+
+void seq()
+
+{
+
+ int i=0,j,n,flag;
+
+ char c;
+
+  for(i=0;i<50;i++)
+
+  {
+
+   spaces[i]=0;
+
+  }
+
+ printf("Enter the no of files:");
+
+ scanf("%d",&n);
+
+ while(i<n)
+
+ {
+
+ printf("\nEnter the file name:");
+
+ scanf("%c",&c);
+
+ scanf("%c",&files[i].name);
+
+ printf("Enter the starting block of the file %c:",files[i].name);
+
+ scanf("%d",&files[i].start); 
+
+ printf("Enter the length of the file %c:",files[i].name);
+
+ scanf("%d",&files[i].len);
+
+ flag=search(files[i].start,files[i].len);
+
+ if(flag==1)
+
+ {
+
+ for(j=files[i].start;j<files[i].start+files[i].len;j++)
+
+      spaces[j]=1;
+
+ printf("\nFile %c succesfully allocated\n",files[i].name);
+
+ files[i].status=1;
+
+ }
+
+ else {
+
+ printf("\n--File %c cannot be allocated--",files[i].name);
+
+ printf("\n--Try another starting block--"); 
+
+ continue;
+
+ }
+
+ i++;
+
+ }
+
+ printf("\nName\tStart\tLength");
+
+ for(i=0;i<n;i++)
+
+ {
+
+  if(files[i].status==1)
+
+      printf("\n%c\t%d\t%d\n",files[i].name,files[i].start,files[i].len);
+
+ }
+
+}
+
+void linked()
+
+{
+
+ int i,j,n,b;
+
+ for(i=0;i<50;i++)
+
+ {
+
+ spaces[i]=0;
+
+ }
+
+ printf("\nEnter the no of files:");
+
+ scanf("%d",&n);
+
+ for(int i=0;i<n;i++)
+
+ {
+
+ printf("\nEnter the file name:");
+
+ scanf("%s",f[i].name);
+
+ do
+
+ {
+
+  printf("\nEnter the starting block of the file %s:",f[i].name);
+
+  scanf("%d",&f[i].index);
+
+ }while(searchi(f[i].index)==0);
+
+  spaces[f[i].index]=1;
+
+ printf("\nEnter the length of the file:");
+
+ scanf("%d",&f[i].len);
+
+ for(j=0;j<f[i].len-1;j++)
+
+ {
+
+ do
+
+ {
+
+ b=rand()%50;
+
+ }while(searchi(b)!=1);
+
+ f[i].block[j]=b;
+
+ spaces[b]=1;
+
+ } 
+
+ }
+
+ printf("\n Details ");
+
+ for(int i=0;i<n;i++)
+
+ {
+
+ printf("\nFile name: %s",f[i].name);
+
+ printf("\nFile length: %d",f[i].len);
+
+ printf("\nFile blocks:");
+
+ printf("\n%d",f[i].index);
+
+ for(j=0;j<f[i].len-1;j++)
+
+ {
+
+ printf("->%d",f[i].block[j]);
+
+ }
+
+ }
+
+ printf("\n");
+
+}
+
+void indexed()
+
+{
+
+ int i,j,n,b;
+
+ for(i=0;i<50;i++)
+
+ {
+
+ spaces[i]=0;
+
+ }
+
+ printf("\nEnter the no of files:");
+
+ scanf("%d",&n);
+
+ for(int i=0;i<n;i++)
+
+ {
+
+ printf("\nEnter the file name:");
+
+ scanf("%s",f[i].name);
+
+ do
+
+ {
+
+ printf("\nEnter the index block of the file %s:",f[i].name);
+
+ scanf("%d",&f[i].index);
+
+ }while(searchi(f[i].index)==0);
+
+  spaces[f[i].index]=1;
+
+ printf("\nEnter the length of the file:");
+
+ scanf("%d",&f[i].len);
+
+ for(j=0;j<f[i].len;j++)
+
+ {
+
+ do
+
+ {
+
+  b=rand()%50;
+
+ }while(searchi(b)!=1);
+
+ f[i].block[j]=b;
+
+ spaces[b]=1;
+
+ } 
+
+ }
+
+ printf("\n Details ");
+
+ for(int i=0;i<n;i++)
+
+ {
+
+ printf("\nFile name: %s",f[i].name);
+
+ printf("\nIndex block: %d",f[i].index);
+
+ printf("\nFile length: %d",f[i].len);
+
+ printf("\nFile blocks:");
+
+ for(j=0;j<f[i].len;j++)
+
+ {
+
+ printf("%d ",f[i].block[j]);
+
+ }
+
+ }
+
+ printf("\n");
+
+}
+
+void main()
+
+{
+
+int ch,cn;
+
+do
+
+{
+
+ printf("\n-----File Allocation-----\n");
+
+ printf("1.Sequential\n2.Linked\n3.Indexed\n4.Exit\n");
+
+ printf("Enter a choice:");
+
+ scanf("%d",&ch);
+
+ switch(ch)
+
+ {
+
+ case 1: seq(); break;
+
+ case 2: linked(); break;
+
+ case 3: indexed(); break;
+
+ case 4: exit(0);
+
+ default : printf("\nEnter a Valid Choice\n");
+
+ }
+
+ printf("\nDo you want to continue?(Y=1 or N=0): ");
+
+ scanf("%d",&cn);
+
+}while(cn == 1);
+
+printf("\n");
+
+}
