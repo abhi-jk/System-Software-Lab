@@ -1,0 +1,146 @@
+#include <stdio.h>
+
+
+
+int n;
+
+struct pagetale
+
+{
+
+  int pgno;
+
+  int frno;
+
+} p[20];
+
+
+
+struct logaddr
+
+{
+
+  int pagno;
+
+  int offset;
+
+}l;
+
+
+
+int search(int pb)
+
+{
+
+  int j,flag=0;
+
+  for(j=0;j<n;j++)
+
+  {
+
+   if(pb == p[j].pgno)
+
+   {
+
+       flag=1;
+
+     break;
+
+   }
+
+  }
+
+  return flag;
+
+}
+
+
+
+int main()
+
+{
+
+  int i,pagsz,s,t,r;
+
+  printf("\nEnter the page size:");
+
+  scanf("%d",&pagsz);
+
+  printf("\nEnter the size of the page table:");
+
+  scanf("%d",&n);
+
+  printf("\nEnter the contents of the page table:");
+
+  for(i=0;i<n;i++)
+
+  {
+
+    printf("\nPage No:");
+
+    scanf("%d",&p[i].pgno);
+
+    printf("\nFrame No:");
+
+    scanf("%d",&p[i].frno);
+
+  }
+
+  printf("\nEnter the logical address:");
+
+  do
+
+  {
+
+    printf("\nEnter Page No:");
+
+    scanf("%d",&l.pagno);
+
+    s=search(l.pagno);
+
+    if(s==0)
+
+      printf("\n Entered Page number is not found in the page table");
+
+  }while(s!=1);
+
+  do
+
+  {
+
+    printf("\nEnter Offset value:");
+
+    scanf("%d",&l.offset);
+
+    t=l.offset;
+
+    if(t>pagsz-1)
+
+      printf("\nEntered offset is not valid");
+
+  }while(t>pagsz-1);
+
+  for(i=0;i<n;i++)
+
+  {
+
+    if(l.pagno == p[i].pgno)
+
+    {
+
+       r=p[i].frno;
+
+     break;
+
+    }
+
+  }
+
+  r*=pagsz;
+
+  r+=l.offset;
+
+  printf("\nThe Physical address is :%d\n",r);
+
+}
+
